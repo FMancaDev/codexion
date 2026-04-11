@@ -1,0 +1,77 @@
+GUIA DE ESTUDOS PARA ESTE PROJETO
+
+OBJETIVO:
+
+	- O codexion tem como objetivo fazem um programa em que varias tarefas sao
+	executadas em simultaneo pelos coders otimizando o uso do processador
+	"MUTEX" e "THREADS", devo simular um ambiente onde varios coders tentam
+	realizar tarefas, mas dependem de outros recursos (dongles)
+
+
+CENARIO:
+
+	1. existem N coders sentados em roda
+	2. existem N dongles na mesa (um entre cada coder)
+	3. para um coder compilar, ele precisa segurar 2 dongles (direita e esquerda)
+	4. se o coder n conseguir compilar dentro de um tempo limite (time_to_burnout)
+	ele sofre um burnout e a simulacao para 
+
+
+DESAFIO TECNICO:
+
+tenho de gerenciar o acesso aos donles de forma que:
+
+	. nao haja deadlock: 2 coders n podem ficar a espera eternamente um pelo outro
+	ex: todos pegam o dongle da direita e ninguem consegue pegar o da esquerda
+
+	. sincronizacao: tenho de garantir que 2 coders n pegam no mesmo dongle ao 
+	mesmo tempo
+
+	. scheduler: implentar regras de prioridade (FIFO ou EDF) para decidir quem
+	pega no dongle primeiro
+
+
+THREADS:
+
+	. sao pequenas unidades de processamente que um sistema operativo gere dentro
+	de um processo o que permite um programa realize multiplas tarefas
+	simultaneamente o que vai nelhorar o desempenho pois partilham o mesmo espaço de
+	memoria
+
+	ex: se imaginarmos um escritorio como um programa, uma thread seria um
+	funcionario nesse escritorio
+
+	No codexion cada coder será uma thread independente (pthread_create). Elas rodam
+	simultaneamente, cada uma (thread) vai tentar executar o seu ciclo
+	compilar -> debugar -> refatorar
+
+
+MUTEXES:
+
+	. sao mecanismos de sincronizacao que servem para proteger dados que nao podem
+	ser acessados por duas threads ao mesmo tempo
+
+	. na pratica funcionaria assim: 1. uma thread tenta dar 'lock' no mutex
+	2. se ele ja tiver ocupado, a thread fica parada á espera que fique desocupada
+	3. qnd a thread termina de usar o recurso, ele da 'unlock' permitindo que a 
+	outra thread o use
+
+	No codexion cada dongle tem que ser protegido por uma mutex, isso garante que,
+	se o coder1 pegar o dongle, o coder2 terá que esperar até que o coder1 o solte
+
+	ex: numa casa de banho que é um item partilhado, varias pessoas querem usa-la
+	(nota: as pessoas sao as threads), se 3 pessoas quisessem usar a casa de banho
+	mas apenas uma pessoa pode entrar de cada vez, a 1ª que entra da lock á porta
+	as duas pessoas(threads) ficam a espera, a 1ª tranca a porta com a chave (MUTEX)
+	garantindo que mais ninguem entre enq ele a usa e qnd ela sair dá unlock a porta
+	e sai assim a prox. pessoa (thread) ja pode usar porque o item que todos
+	compartilham ja nao esta a ser usado e a 3ª pessoa agr fica a espera da 2ª e por
+	aí adiante até que nenhum deles precise mais
+
+
+CONCEITOS CHAVES:
+
+	. Data Race: tenho que evitar que duas threads alterem a mesma variavel ao 
+	mesmo tempo
+
+	. Deadlock: 
