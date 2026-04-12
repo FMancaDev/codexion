@@ -74,4 +74,20 @@ CONCEITOS CHAVES:
 	. Data Race: tenho que evitar que duas threads alterem a mesma variavel ao 
 	mesmo tempo
 
-	. Deadlock: 
+	. Deadlock: simular onde o coder1 espera o dongle do coder2, e o coder2 espera
+	o dongle do coder1. o programa "congela"
+
+	. starvation: qnd um coder nunca consegue pegar nos dongles porque os vizinhos
+	sao 'mais rapidos'
+
+	. priority queue: criar uma estrutura de dados(heap) para gerenciar quem e o
+	proximo da fila de acordo com o scheduler (FIFO ou EDF)
+
+
+NOTAS:
+
+	- pthread_create: cria o coder
+	- pthread_mutex_init / lock / unlock: gerencia os dongles e os logs
+	- pthread_cond_wait / signal: faz uma thread esperar de forma efecient até que
+	um dongle fique livre
+	- gettomeofday: para medir o tempo exato e detetar o burnout
