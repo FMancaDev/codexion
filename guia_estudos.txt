@@ -91,3 +91,8 @@ NOTAS:
 	- pthread_cond_wait / signal: faz uma thread esperar de forma efecient até que
 	um dongle fique livre
 	- gettomeofday: para medir o tempo exato e detetar o burnout
+
+
+........................................................................................
+
+
