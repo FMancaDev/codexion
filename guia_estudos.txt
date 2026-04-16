@@ -95,4 +95,59 @@ NOTAS:
 
 ........................................................................................
 
+NOTAS1:
+	
+	para este projeto preciso de 3 estruturas:
+		. uma para configs gerais
+		. uma para os dongles
+		. e uma para cada coder
+	com isto provavelmente vou conseguir toda a info para as threads
+	sem usar variaveis globais
 
+
+
+DECLARACOES DE FUNCOES:
+
+	- get_time_ms: retorna o tempo atual em milisegundos com 'gettimeofday'
+
+	- time_since_start: retorna quantos ms passaram desde o inicio da simulacao
+
+	- print_coder_status: usa print_lock para imprimir o estado do coder
+
+	- print_burnout: usa print_lock para imprimir o burnout do coder
+	  dentro dos 10ms
+
+	- pqueue_init: inicializa a fila de espera de um dongle com capacidade maxima
+
+	- pqueue_push: adiciona um coder a fila com a sua chave de prioridade
+	  (tempo de chegada no FIFO ou deadline de burnout no EDF)
+
+	- pqueue_pop: remove e retorna o coder com maior prioridade
+	  (chegou primeiro no FIFO ou esta mais perto do burnout no EDF)
+
+	- pqueue_is_empty: verifica se nao ha coders a espera do dongle
+
+	- pqueue_free: liberta a memoria da fila de espera
+
+	- dongle_init: inicializa o mutex, a condition variable e a fila de espera
+	  de um dongle
+
+	- dongle_pick_up: bloqueia a thread ate o dongle estar disponivel e sem
+	  cooldown, respeitando a ordem do scheduler
+
+	- dongle_put_down: liberta o dongle, regista o timestamp do cooldown e
+	  avisa o proximo coder na fila
+
+	- dongle_destroy: destroi o mutex e a condition variable do dongle
+
+	- coder_life_cycle: loop principal de cada coder (compilar -> debugar ->
+	  refatorar) que corre em paralelo com os outros coders
+
+	- burnout_monitor: thread verifica constantemente se algum coder passou o seu 
+	  tempo limite com precisao de 10ms
+
+	- simulation_init: le os argumentos, valida os valores e inicializa todas
+	  as estruturas (coders, dongles, mutexes)
+
+	- simulation_destroy: liberta toda a memoria e destroi todos os mutexes
+	  e condition variables no fim da simulacao
