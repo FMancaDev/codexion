@@ -1,4 +1,4 @@
-#include ../../includes/codexion.h
+#include "../../includes/codexion.h"
 
 static int	is_digit(char *str)
 {
@@ -29,15 +29,15 @@ int	simulation_init(t_simulation *sim, int argc, char **argv)
 		i++;
 	}
 	sim->number_of_coders = atoi(argv[1]);
-	sim->number_of_coders = atoi(argv[2]);
-	sim->number_of_coders = atoi(argv[3]);
-	sim->number_of_coders = atoi(argv[4]);
-	sim->number_of_coders = atoi(argv[5]);
-	sim->number_of_coders = atoi(argv[6]);
-	sim->number_of_coders = atoi(argv[7]);
+	sim->time_to_burnout_ms = atoi(argv[2]);
+	sim->time_to_compile_ms = atoi(argv[3]);
+	sim->time_to_debug_ms = atoi(argv[4]);
+	sim->time_to_refactor_ms = atoi(argv[5]);
+	sim->compiles_required_to_stop = atoi(argv[6]);
+	sim->dongle_cooldown_ms = atoi(argv[7]);
 	if (sim->number_of_coders < 1)
 		return (1);
-	if (strcmp(argv[0], "fifo") == 0)
+	if (strcmp(argv[8], "fifo") == 0)
 		sim->scheduler_mode = FIRST_IN_FIRST_OUT;
 	else if (strcmp(argv[0], "edf") == 0)
 		sim->scheduler_mode = EARLIEST_DEADLINE_FIRST;

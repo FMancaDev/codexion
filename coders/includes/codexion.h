@@ -13,6 +13,7 @@
 # define FIRST_IN_FIRST_OUT		0
 # define EARLIEST_DEADLINE_FIRST	1
 
+typedef struct s_simulation t_simulation;
 
 // fila de propriedades
 typedef struct s_waiting_coder
