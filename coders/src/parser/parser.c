@@ -76,7 +76,10 @@ int	simulation_init(t_simulation *sim, int argc, char **argv)
 	while (i < sim->number_of_coders)
 	{
 		if (dongle_init(&sim->dongles[i], sim->number_of_coders) != 0)
+		{
+			simulation_destroy(sim);
 			return (1);
+		}
 		i++;
 	}
 	init_coders_links(sim);
