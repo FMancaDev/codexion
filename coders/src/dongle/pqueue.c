@@ -1,14 +1,5 @@
 #include "../../includes/codexion.h"
 
-static void	swap(t_waiting_coder *a, t_waiting_coder *b)
-{
-	t_waiting_coder temp;
-
-	temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
 int	pqueue_init(t_priority_queue *pq, int capacity)
 {
 	pq->entries = malloc(sizeof(t_waiting_coder) * capacity);
@@ -27,13 +18,6 @@ void	pqueue_free(t_priority_queue *pq)
 		pq->entries = NULL;
 	}
 	pq->count = 0;
-}
-
-int	pqueue_is_empty(t_priority_queue *pq)
-{
-	if (pq->count == 0)
-		return (1);
-	return (0);
 }
 
 int	pqueue_push(t_priority_queue *pq, int coder_id, long long key)

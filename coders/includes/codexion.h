@@ -84,6 +84,7 @@ void			pqueue_free(t_priority_queue *pq);
 int			pqueue_push(t_priority_queue *pq, int coder_id, long long key);
 t_waiting_coder		pqueue_pop(t_priority_queue *pq);
 int			pqueue_is_empty(t_priority_queue *pq);
+void			swap(t_waiting_coder *a, t_waiting_coder *b);
 
 
 // operacoes dos dongles

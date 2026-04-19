@@ -151,3 +151,11 @@ DECLARACOES DE FUNCOES:
 
 	- simulation_destroy: liberta toda a memoria e destroi todos os mutexes
 	  e condition variables no fim da simulacao
+
+
+MAIS NOTAS:
+
+	. A funcao get_time_ms retorna o tempo atual em ms e uso long long para evitar
+	overflow
+
+	.
