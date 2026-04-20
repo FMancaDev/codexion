@@ -27,6 +27,7 @@ static void	init_coders_links(t_simulation *sim)
 		sim->coders[i].left_dongle = &sim->dongles[i];
 		sim->coders[i].right_dongle = (&sim->dongles[(i + 1)
 				%sim->number_of_coders]);
+		sim->coders[i].last_compile_started_at = sim->simulation_started_at;
 		i++;
 	}
 }
@@ -78,7 +79,7 @@ int	simulation_init(t_simulation *sim, int argc, char **argv)
 		}
 		i++;
 	}
-	init_coders_links(sim);
 	sim->simulation_started_at = get_time_ms();
+	init_coders_links(sim);
 	return (0);
 }
