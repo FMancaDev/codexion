@@ -79,5 +79,6 @@ int	simulation_init(t_simulation *sim, int argc, char **argv)
 		i++;
 	}
 	init_coders_links(sim);
+	sim->simulation_started_at = get_time_ms();
 	return (0);
 }

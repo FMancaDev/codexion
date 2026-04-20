@@ -66,6 +66,7 @@ typedef struct s_simulation
 	int			simulation_should_stop;
 	pthread_mutex_t		print_lock;
 	pthread_mutex_t		stop_flag_lock;
+	pthread_t		monitor_thread;
 	t_dongle		*dongles;
 	t_coder			*coders;
 }	t_simulation;
@@ -102,5 +103,7 @@ void		*burnout_monitor(void *simulation_ptr);
 // cleanup
 int		simulation_init(t_simulation *sim, int argc, char **argv);
 void		simulation_destroy(t_simulation *sim);
+int		simulation_run(t_simulation *sim);
+
 
 #endif
