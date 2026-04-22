@@ -40,22 +40,21 @@ void	dongle_pick_up(t_dongle *dongle, t_coder *coder)
 
 	pqueue_push(&dongle->waiting_coders, coder->id, key);
 
-	while (dongle->is_held 
-		|| get_time_ms() < dongle->available_after_ms 
-		|| dongle->waiting_coders.entries[0].coder_id != coder->id)
+	while (1)
 	{
 		if (coder->simulation->simulation_should_stop)
 			break ;
 
+		if (!dongle->is_held 
+			&& get_time_ms() >= dongle->available_after_ms 
+			&& dongle->waiting_coders.entries[0].coder_id == coder->id)
+		{
+			pqueue_pop(&dongle->waiting_coders);
+			dongle->is_held = 1;
+			break ;
+		}
 		pthread_cond_wait(&dongle->became_available, &dongle->access_lock);
 	}
-
-	if (!coder->simulation->simulation_should_stop)
-	{
-		pqueue_pop(&dongle->waiting_coders);
-		dongle->is_held = 1;
-	}
-	
 	pthread_mutex_unlock(&dongle->access_lock);
 }
 

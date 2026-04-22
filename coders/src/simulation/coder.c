@@ -2,45 +2,69 @@
 
 static int	perform_cycle(t_coder *coder)
 {
-	// take left dongle
-	dongle_pick_up(coder->left_dongle, coder);
-	pthread_mutex_lock(&coder->simulation->stop_flag_lock);
-
-	if (coder->simulation->simulation_should_stop)
+	if (coder->id % 2 == 0)
 	{
+		// Coder par pega o dongle DIREITO primeiro
+		dongle_pick_up(coder->right_dongle, coder);
+		pthread_mutex_lock(&coder->simulation->stop_flag_lock);
+		if (coder->simulation->simulation_should_stop)
+		{
+			pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
+			return (1);
+		}
 		pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
-		return (1);
-	}
-	pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
 
-	// take right dongle
-	dongle_pick_up(coder->right_dongle, coder);
-	pthread_mutex_lock(&coder->simulation->stop_flag_lock);
-	if (coder->simulation->simulation_should_stop)
+		dongle_pick_up(coder->left_dongle, coder);
+		pthread_mutex_lock(&coder->simulation->stop_flag_lock);
+		if (coder->simulation->simulation_should_stop)
+		{
+			pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
+			dongle_put_down(coder->right_dongle, coder->simulation);
+			return (1);
+		}
+		pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
+	}
+	else
 	{
+		// Coder impar pega o dongle ESQUERDO primeiro
+		dongle_pick_up(coder->left_dongle, coder);
+		pthread_mutex_lock(&coder->simulation->stop_flag_lock);
+		if (coder->simulation->simulation_should_stop)
+		{
+			pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
+			return (1);
+		}
 		pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
-		dongle_put_down(coder->left_dongle, coder->simulation);
-		return (1);
-	}
-	pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
 
-	// compiling
+		dongle_pick_up(coder->right_dongle, coder);
+		pthread_mutex_lock(&coder->simulation->stop_flag_lock);
+		if (coder->simulation->simulation_should_stop)
+		{
+			pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
+			dongle_put_down(coder->left_dongle, coder->simulation);
+			return (1);
+		}
+		pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
+	}
+
+	// compilar
 	coder->last_compile_started_at = get_time_ms();
 	print_coder_status(coder, "is compiling");
 	usleep(coder->simulation->time_to_compile_ms * 1000);
 	coder->times_compiled++;
 
-	// dropping dongles
+	// larga os dongles
 	dongle_put_down(coder->left_dongle, coder->simulation);
 	dongle_put_down(coder->right_dongle, coder->simulation);
 
-	// debugging and refactoring
+	// debugar e refatorar
 	print_coder_status(coder, "is debugging");
 	usleep(coder->simulation->time_to_debug_ms * 1000);
 	
 	print_coder_status(coder, "is refactoring");
 	usleep(coder->simulation->time_to_refactor_ms * 1000);
 
+	usleep(100);
 	return (0);
 }
 
