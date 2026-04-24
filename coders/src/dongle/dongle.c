@@ -29,43 +29,49 @@ int	dongle_init(t_dongle *dongle, int max_waiting_coders)
 
 void	dongle_pick_up(t_dongle *dongle, t_coder *coder)
 {
-	long long	key;
+	long long		key;
+	struct timespec		ts;
+	struct timeval		tv;
 
 	pthread_mutex_lock(&dongle->access_lock);
-	
 	if (coder->simulation->scheduler_mode == FIRST_IN_FIRST_OUT)
 		key = get_time_ms();
 	else
-		key = coder->last_compile_started_at + coder->simulation->time_to_burnout_ms;
-
+		key = coder->last_compile_started_at
+			+ coder->simulation->time_to_burnout_ms;
 	pqueue_push(&dongle->waiting_coders, coder->id, key);
-
-	while (1)
+	while (dongle->is_held
+		|| get_time_ms() < dongle->available_after_ms
+		|| dongle->waiting_coders.entries[0].coder_id != coder->id)
 	{
 		if (coder->simulation->simulation_should_stop)
 			break ;
-
-		if (!dongle->is_held 
-			&& get_time_ms() >= dongle->available_after_ms 
-			&& dongle->waiting_coders.entries[0].coder_id == coder->id)
+		gettimeofday(&tv, NULL);
+		ts.tv_sec = tv.tv_sec;
+		ts.tv_nsec = tv.tv_usec * 1000 + 1000000;
+		if (ts.tv_nsec >= 1000000000)
 		{
-			pqueue_pop(&dongle->waiting_coders);
-			dongle->is_held = 1;
-			break ;
+			ts.tv_sec += 1;
+			ts.tv_nsec -= 1000000000;
 		}
-		pthread_cond_wait(&dongle->became_available, &dongle->access_lock);
+		pthread_cond_timedwait(&dongle->became_available,
+			&dongle->access_lock, &ts);
 	}
+	if (!coder->simulation->simulation_should_stop)
+	{
+		pqueue_pop(&dongle->waiting_coders);
+		dongle->is_held = 1;
+	}
+	else
+		pqueue_pop(&dongle->waiting_coders);
 	pthread_mutex_unlock(&dongle->access_lock);
 }
 
 void	dongle_put_down(t_dongle *dongle, t_simulation *sim)
 {
 	pthread_mutex_lock(&dongle->access_lock);
-	
 	dongle->is_held = 0;
 	dongle->available_after_ms = get_time_ms() + sim->dongle_cooldown_ms;
-	
 	pthread_cond_broadcast(&dongle->became_available);
-	
 	pthread_mutex_unlock(&dongle->access_lock);
 }

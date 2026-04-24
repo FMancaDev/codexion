@@ -31,7 +31,6 @@ int	pqueue_push(t_priority_queue *pq, int coder_id, long long key)
 	pq->entries[pq->count].priority_key = key;
 	i = pq->count;
 	pq->count++;
-
 	while (i > 0)
 	{
 		parent = (i - 1) / 2;
@@ -48,28 +47,27 @@ int	pqueue_push(t_priority_queue *pq, int coder_id, long long key)
 
 t_waiting_coder	pqueue_pop(t_priority_queue *pq)
 {
-	t_waiting_coder top;
-	int	i;
-	int	smallest;
-	int	left;
-	int	right;
+	t_waiting_coder	top;
+	int		i;
+	int		smallest;
+	int		left;
+	int		right;
 
 	top = pq->entries[0];
 	pq->count--;
 	pq->entries[0] = pq->entries[pq->count];
 	i = 0;
-
 	while (1)
 	{
 		left = 2 * i + 1;
 		right = 2 * i + 2;
 		smallest = i;
-
-		if (left < pq->count && pq->entries[left].priority_key < pq->entries[smallest].priority_key)
+		if (left < pq->count && pq->entries[left].priority_key
+			< pq->entries[smallest].priority_key)
 			smallest = left;
-		if (right < pq->count && pq->entries[right].priority_key < pq->entries[smallest].priority_key)
+		if (right < pq->count && pq->entries[right].priority_key
+			< pq->entries[smallest].priority_key)
 			smallest = right;
-
 		if (smallest == i)
 			break ;
 		swap(&pq->entries[i], &pq->entries[smallest]);
@@ -77,5 +75,3 @@ t_waiting_coder	pqueue_pop(t_priority_queue *pq)
 	}
 	return (top);
 }
-
-
