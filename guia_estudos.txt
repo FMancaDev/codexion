@@ -157,5 +157,3 @@ MAIS NOTAS:
 
 	. A funcao get_time_ms retorna o tempo atual em ms e uso long long para evitar
 	overflow
-
-	.

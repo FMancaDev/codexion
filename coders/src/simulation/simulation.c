@@ -6,12 +6,11 @@ int	simulation_run(t_simulation *sim)
 
 	if (pthread_create(&sim->monitor_thread, NULL, burnout_monitor, sim) != 0)
 		return (1);
-
 	i = 0;
 	while (i < sim->number_of_coders)
 	{
 		if (pthread_create(&sim->coders[i].thread, NULL,
-		     		coder_life_cycle, &sim->coders[i]) != 0)
+				coder_life_cycle, &sim->coders[i]) != 0)
 			return (1);
 		i++;
 	}
@@ -24,7 +23,6 @@ int	simulation_run(t_simulation *sim)
 	pthread_join(sim->monitor_thread, NULL);
 	return (0);
 }
-
 
 void	simulation_destroy(t_simulation *sim)
 {

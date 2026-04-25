@@ -48,10 +48,10 @@ int	pqueue_push(t_priority_queue *pq, int coder_id, long long key)
 t_waiting_coder	pqueue_pop(t_priority_queue *pq)
 {
 	t_waiting_coder	top;
-	int		i;
-	int		smallest;
-	int		left;
-	int		right;
+	int				i;
+	int				smallest;
+	int				left;
+	int				right;
 
 	top = pq->entries[0];
 	pq->count--;

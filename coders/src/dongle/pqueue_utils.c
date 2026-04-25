@@ -2,7 +2,7 @@
 
 void	swap(t_waiting_coder *a, t_waiting_coder *b)
 {
-	t_waiting_coder temp;
+	t_waiting_coder	temp;
 
 	temp = *a;
 	*a = *b;

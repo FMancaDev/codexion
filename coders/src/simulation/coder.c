@@ -82,7 +82,8 @@ void	*coder_life_cycle(void *arg)
 	{
 		if (stop_requested(coder))
 			break ;
-		if (coder->times_compiled >= coder->simulation->compiles_required_to_stop)
+		if (coder->times_compiled
+			>= coder->simulation->compiles_required_to_stop)
 		{
 			pthread_mutex_lock(&coder->simulation->stop_flag_lock);
 			coder->simulation->simulation_should_stop = 1;

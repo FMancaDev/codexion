@@ -30,8 +30,8 @@ int	dongle_init(t_dongle *dongle, int max_waiting_coders)
 void	dongle_pick_up(t_dongle *dongle, t_coder *coder)
 {
 	long long		key;
-	struct timespec		ts;
-	struct timeval		tv;
+	struct timespec	ts;
+	struct timeval	tv;
 
 	pthread_mutex_lock(&dongle->access_lock);
 	if (coder->simulation->scheduler_mode == FIRST_IN_FIRST_OUT)
