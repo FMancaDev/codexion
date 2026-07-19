@@ -6,82 +6,69 @@
 /*   By: fomanca <fomanca@student.42porto.com>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/25 19:10:48 by fomanca           #+#    #+#             */
-/*   Updated: 2026/04/25 19:31:10 by fomanca          ###   ########.fr       */
+/*   Updated: 2026/07/19 17:25:56 by fomanca          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "../../includes/codexion.h"
 
-static int	stop_requested(t_coder *coder)
-{
-	int	should_stop;
-
-	pthread_mutex_lock(&coder->simulation->stop_flag_lock);
-	should_stop = coder->simulation->simulation_should_stop;
-	pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
-	return (should_stop);
-}
-
-static void	wake_all_dongles(t_simulation *sim)
-{
-	int	i;
-
-	i = 0;
-	while (i < sim->number_of_coders)
-	{
-		pthread_mutex_lock(&sim->dongles[i].access_lock);
-		pthread_cond_broadcast(&sim->dongles[i].became_available);
-		pthread_mutex_unlock(&sim->dongles[i].access_lock);
-		i++;
-	}
-}
-
-static int	pick_up_both_dongles(t_coder *coder)
+static int	pick_up_pair(t_coder *coder)
 {
 	t_dongle	*first;
 	t_dongle	*second;
 
 	if (coder->id % 2 == 0)
 	{
-		first = coder->right_dongle;
-		second = coder->left_dongle;
+		first = coder->right;
+		second = coder->left;
 	}
 	else
 	{
-		first = coder->left_dongle;
-		second = coder->right_dongle;
+		first = coder->left;
+		second = coder->right;
 	}
-	dongle_pick_up(first, coder);
-	if (stop_requested(coder))
+	if (dongle_pick_up(first, coder) != 0)
 		return (1);
-	dongle_pick_up(second, coder);
-	if (stop_requested(coder))
+	if (dongle_pick_up(second, coder) != 0)
 	{
-		dongle_put_down(first, coder->simulation);
+		dongle_put_down(first, coder->sim);
 		return (1);
 	}
 	return (0);
 }
 
+static void	put_down_pair(t_coder *coder)
+{
+	dongle_put_down(coder->left, coder->sim);
+	dongle_put_down(coder->right, coder->sim);
+}
+
 static int	perform_cycle(t_coder *coder)
 {
-	if (pick_up_both_dongles(coder) != 0)
+	if (pick_up_pair(coder) != 0)
 		return (1);
-	coder->last_compile_started_at = get_time_ms();
-	print_coder_status(coder, "is compiling");
-	usleep(coder->simulation->time_to_compile_ms * 1000);
-	coder->times_compiled++;
-	dongle_put_down(coder->left_dongle, coder->simulation);
-	dongle_put_down(coder->right_dongle, coder->simulation);
-	if (stop_requested(coder))
+	coder_mark_compile_start(coder);
+	print_status(coder, "is compiling");
+	if (smart_sleep(coder->sim, coder->sim->time_to_compile))
+		return (put_down_pair(coder), 1);
+	coder_increment_compile_count(coder);
+	put_down_pair(coder);
+	print_status(coder, "is debugging");
+	if (smart_sleep(coder->sim, coder->sim->time_to_debug))
 		return (1);
-	print_coder_status(coder, "is debugging");
-	usleep(coder->simulation->time_to_debug_ms * 1000);
-	if (stop_requested(coder))
-		return (1);
-	print_coder_status(coder, "is refactoring");
-	usleep(coder->simulation->time_to_refactor_ms * 1000);
-	return (0);
+	print_status(coder, "is refactoring");
+	return (smart_sleep(coder->sim, coder->sim->time_to_refactor));
+}
+
+static void	single_coder(t_coder *coder)
+{
+	if (dongle_pick_up(coder->left, coder) == 0)
+	{
+		while (!simulation_stopped(coder->sim))
+			usleep(200);
+		dongle_put_down(coder->left, coder->sim);
+	}
 }
 
 void	*coder_life_cycle(void *arg)
@@ -89,22 +76,18 @@ void	*coder_life_cycle(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
-	coder->last_compile_started_at = coder->simulation->simulation_started_at;
-	while (1)
+	wait_for_start(coder->sim);
+	if (coder->sim->number_of_coders == 1)
+		single_coder(coder);
+	else
 	{
-		if (stop_requested(coder))
-			break ;
-		if (coder->times_compiled
-			>= coder->simulation->compiles_required_to_stop)
+		if (coder->id % 2 == 0)
+			usleep(500);
+		while (!simulation_stopped(coder->sim))
 		{
-			pthread_mutex_lock(&coder->simulation->stop_flag_lock);
-			coder->simulation->simulation_should_stop = 1;
-			pthread_mutex_unlock(&coder->simulation->stop_flag_lock);
-			wake_all_dongles(coder->simulation);
-			break ;
+			if (perform_cycle(coder) != 0)
+				break ;
 		}
-		if (perform_cycle(coder) != 0)
-			break ;
 	}
 	return (NULL);
 }

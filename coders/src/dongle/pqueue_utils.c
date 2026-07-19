@@ -6,24 +6,32 @@
 /*   By: fomanca <fomanca@student.42porto.com>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/25 19:25:42 by fomanca           #+#    #+#             */
-/*   Updated: 2026/04/25 19:31:10 by fomanca          ###   ########.fr       */
+/*   Updated: 2026/07/19 17:23:12 by fomanca          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "../../includes/codexion.h"
 
-void	swap(t_waiting_coder *a, t_waiting_coder *b)
+int	waiter_before(t_waiting_coder a, t_waiting_coder b)
 {
-	t_waiting_coder	temp;
+	if (a.priority_key != b.priority_key)
+		return (a.priority_key < b.priority_key);
+	if (a.sequence != b.sequence)
+		return (a.sequence < b.sequence);
+	return (a.coder_id < b.coder_id);
+}
 
-	temp = *a;
+void	waiter_swap(t_waiting_coder *a, t_waiting_coder *b)
+{
+	t_waiting_coder	tmp;
+
+	tmp = *a;
 	*a = *b;
-	*b = temp;
+	*b = tmp;
 }
 
 int	pqueue_is_empty(t_priority_queue *pq)
 {
-	if (pq->count == 0)
-		return (1);
-	return (0);
+	return (pq->count == 0);
 }

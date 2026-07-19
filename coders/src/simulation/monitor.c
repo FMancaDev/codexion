@@ -6,62 +6,68 @@
 /*   By: fomanca <fomanca@student.42porto.com>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/25 19:20:12 by fomanca           #+#    #+#             */
-/*   Updated: 2026/04/25 19:31:10 by fomanca          ###   ########.fr       */
+/*   Updated: 2026/07/19 17:26:39 by fomanca          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "../../includes/codexion.h"
 
-static int	check_individual_burnout(t_simulation *sim, t_coder *coder)
+static int	all_required_compiles_done(t_simulation *sim)
 {
-	long long	current_time;
-	long long	time_without_compiling;
+	int	i;
+
+	i = 0;
+	while (i < sim->number_of_coders)
+	{
+		if (coder_compile_count(&sim->coders[i]) < sim->compiles_required)
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+static t_coder	*find_burned_out_coder(t_simulation *sim)
+{
+	long long	now;
 	int			i;
 
-	current_time = get_time_ms();
-	time_without_compiling = current_time - coder->last_compile_started_at;
-	if (time_without_compiling >= sim->time_to_burnout_ms)
+	now = get_time_ms();
+	i = 0;
+	while (i < sim->number_of_coders)
 	{
-		pthread_mutex_lock(&sim->stop_flag_lock);
-		sim->simulation_should_stop = 1;
-		pthread_mutex_unlock(&sim->stop_flag_lock);
-		print_burnout(coder);
-		i = 0;
-		while (i < sim->number_of_coders)
-		{
-			pthread_mutex_lock(&sim->dongles[i].access_lock);
-			pthread_cond_broadcast(&sim->dongles[i].became_available);
-			pthread_mutex_unlock(&sim->dongles[i].access_lock);
-			i++;
-		}
-		return (1);
+		if (now - coder_last_compile(&sim->coders[i])
+			>= sim->time_to_burnout)
+			return (&sim->coders[i]);
+		i++;
 	}
-	return (0);
+	return (NULL);
 }
 
 void	*burnout_monitor(void *arg)
 {
 	t_simulation	*sim;
-	int				i;
+	t_coder			*burned_out;
 
 	sim = (t_simulation *)arg;
-	while (1)
+	wait_for_start(sim);
+	while (!simulation_stopped(sim))
 	{
-		pthread_mutex_lock(&sim->stop_flag_lock);
-		if (sim->simulation_should_stop)
+		burned_out = find_burned_out_coder(sim);
+		if (burned_out)
 		{
-			pthread_mutex_unlock(&sim->stop_flag_lock);
+			if (simulation_stop(sim))
+				print_burnout(burned_out);
+			wake_all_dongles(sim);
 			break ;
 		}
-		pthread_mutex_unlock(&sim->stop_flag_lock);
-		i = 0;
-		while (i < sim->number_of_coders)
+		if (all_required_compiles_done(sim))
 		{
-			if (check_individual_burnout(sim, &sim->coders[i]))
-				return (NULL);
-			i++;
+			simulation_stop(sim);
+			wake_all_dongles(sim);
+			break ;
 		}
-		usleep(500);
+		usleep(200);
 	}
 	return (NULL);
 }
